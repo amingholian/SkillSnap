@@ -10,7 +10,15 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 builder.Services.AddDbContext<SkillSnapContext>(options =>
-    options.UseSqlite("Data Source=skillsnap.db"));
+  options.UseSqlite("Data Source=skillsnap.db"));
+
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("BlazorClient", policy =>
+    policy.WithOrigins("https://localhost:7232", "http://localhost:5232")
+      .AllowAnyHeader()
+      .AllowAnyMethod());
+});
 
 var app = builder.Build();
 
@@ -32,6 +40,8 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseCors("BlazorClient");
 
 app.MapRazorPages();
 app.MapControllers();
