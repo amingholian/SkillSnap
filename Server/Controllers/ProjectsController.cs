@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SkillSnap.Server.Data;
@@ -14,6 +15,7 @@ public class ProjectsController : ControllerBase
     _context = context;
   }
 
+  [Authorize]
   [HttpGet]
   public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
   {
@@ -28,6 +30,7 @@ public class ProjectsController : ControllerBase
     return project;
   }
 
+  [Authorize(Roles = "Admin")]
   [HttpPost]
   public async Task<ActionResult<Project>> AddProject([FromBody] Project project)
   {
@@ -36,6 +39,7 @@ public class ProjectsController : ControllerBase
     return CreatedAtAction(nameof(GetProject), new { id = project.Id }, project);
   }
 
+  [Authorize(Roles = "Admin")]
   [HttpPut("{id}")]
   public async Task<IActionResult> UpdateProject(int id, [FromBody] Project project)
   {
@@ -45,6 +49,7 @@ public class ProjectsController : ControllerBase
     return NoContent();
   }
 
+  [Authorize(Roles = "Admin")]
   [HttpDelete("{id}")]
   public async Task<IActionResult> DeleteProject(int id)
   {

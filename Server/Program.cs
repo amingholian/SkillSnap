@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using SkillSnap.Server.Data;
 using SkillSnap.Shared.Models;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,9 @@ builder.Services.AddCors(options =>
       .AllowAnyHeader()
       .AllowAnyMethod());
 });
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+  .AddEntityFrameworkStores<SkillSnapContext>();
 
 var app = builder.Build();
 
