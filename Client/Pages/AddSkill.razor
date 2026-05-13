@@ -1,0 +1,13 @@
+@page "/add-skill"
+
+<h3>Add a New Skill</h3>
+
+<input @bind="newSkillName" placeholder="Skill name" />
+<input @bind="newSkillLevel" placeholder="Skill level" />
+
+<p>You're adding: @newSkillName at @newSkillLevel level</p>
+
+@code {
+  private string newSkillName;
+  private string newSkillLevel;
+}

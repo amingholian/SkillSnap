@@ -1,0 +1,14 @@
+@page "/profile"
+@using SkillSnap.Shared.Models
+@using SkillSnap.Client.Shared
+
+<ProfileCard Name="@user.Name" Bio="@user.Bio" ImageUrl="@user.ProfileImageUrl" />
+
+@code {
+  private PortfolioUser user = new()
+  {
+    Name = "Jordan Developer",
+    Bio = "Full-stack developer passionate about learning new tech.",
+    ProfileImageUrl = "https://example.com/images/jordan.png"
+  };
+}
