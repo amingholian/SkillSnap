@@ -10,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddMemoryCache();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<SkillSnapContext>(options =>
   options.UseSqlite("Data Source=skillsnap.db"));
@@ -33,6 +35,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
   app.UseWebAssemblyDebugging();
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
 else
 {
