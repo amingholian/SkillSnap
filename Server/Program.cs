@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SkillSnap.Server.Data;
 using SkillSnap.Server.Extensions;
+using SkillSnap.Server.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,7 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<RequestTimingMiddleware>();
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();

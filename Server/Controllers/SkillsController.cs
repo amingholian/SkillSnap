@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using SkillSnap.Server.Data;
 using SkillSnap.Shared.Models;
 
@@ -11,18 +12,29 @@ namespace SkillSnap.Server.Controllers;
 public class SkillsController : ControllerBase
 {
   private readonly SkillSnapContext _context;
+  private readonly IMemoryCache _cache;
+  private const string SkillsCacheKey = "skill_list";
 
-  public SkillsController(SkillSnapContext context)
+  public SkillsController(SkillSnapContext context, IMemoryCache cache)
   {
     _context = context;
+    _cache = cache;
   }
 
   [HttpGet]
-  public async Task<ActionResult<IEnumerable<Skill>>> GetSkills()
+  public async Task<IActionResult> GetSkills()
   {
-    return await _context.Skills
-        .AsNoTracking()
-        .ToListAsync();
+    if (!_cache.TryGetValue(SkillsCacheKey, out List<Skill>? skills))
+    {
+      skills = await _context.Skills
+          .AsNoTracking()
+          .ToListAsync();
+
+      var cacheOptions = new MemoryCacheEntryOptions()
+          .SetSlidingExpiration(TimeSpan.FromMinutes(5));
+      _cache.Set(SkillsCacheKey, skills, cacheOptions);
+    }
+    return Ok(skills);
   }
 
   [HttpGet("{id}")]
@@ -48,6 +60,7 @@ public class SkillsController : ControllerBase
 
     _context.Skills.Add(skill);
     await _context.SaveChangesAsync();
+    _cache.Remove(SkillsCacheKey);
     return CreatedAtAction(nameof(GetSkill), new { id = skill.Id }, skill);
   }
 }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SkillSnap.Server.Data;
 using SkillSnap.Shared.Models;
 
@@ -16,9 +17,9 @@ namespace SkillSnap.Server.Controllers
     }
 
     [HttpPost]
-    public IActionResult Seed()
+    public async Task<IActionResult> Seed()
     {
-      if (_context.PortfolioUsers.Any())
+      if (await _context.PortfolioUsers.AnyAsync())
       {
         return BadRequest("Sample data already exists.");
       }
@@ -41,7 +42,7 @@ namespace SkillSnap.Server.Controllers
       };
 
       _context.PortfolioUsers.Add(user);
-      _context.SaveChanges();
+      await _context.SaveChangesAsync();
       return Ok("Sample data inserted.");
     }
   }

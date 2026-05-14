@@ -43,6 +43,9 @@
     <hr />
     @if (isAuthenticated)
     {
+      <div class="nav-item px-3 text-white-50 small px-3 pb-1">
+        <span class="oi oi-person" aria-hidden="true"></span> @Session.Email
+      </div>
       <div class="nav-item px-3">
         <button class="btn btn-link nav-link" @onclick="Logout">
           <span class="oi oi-account-logout" aria-hidden="true"></span> Logout
@@ -68,6 +71,7 @@
 @code {
   @inject AuthService AuthService
   @inject NavigationManager Navigation
+  @inject UserSessionService Session
 
   private bool collapseNavMenu = true;
   private bool isAuthenticated;
@@ -83,6 +87,7 @@
   {
     isAuthenticated = await AuthService.IsAuthenticatedAsync();
     AuthService.AuthStateChanged += OnAuthStateChanged;
+    Session.OnChange += OnSessionChanged;
   }
 
   private async void OnAuthStateChanged()
@@ -91,9 +96,15 @@
     await InvokeAsync(StateHasChanged);
   }
 
+  private void OnSessionChanged()
+  {
+    InvokeAsync(StateHasChanged);
+  }
+
   public void Dispose()
   {
     AuthService.AuthStateChanged -= OnAuthStateChanged;
+    Session.OnChange -= OnSessionChanged;
   }
 
   private async Task Logout()

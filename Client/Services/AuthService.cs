@@ -9,11 +9,13 @@ public class AuthService
 
   private readonly HttpClient _http;
   private readonly ILocalStorageService _localStorage;
+  private readonly UserSessionService _session;
 
-  public AuthService(HttpClient http, ILocalStorageService localStorage)
+  public AuthService(HttpClient http, ILocalStorageService localStorage, UserSessionService session)
   {
     _http = http;
     _localStorage = localStorage;
+    _session = session;
   }
 
   public async Task<string?> GetTokenAsync()
@@ -29,6 +31,7 @@ public class AuthService
     await _localStorage.SetItemAsync(TokenKey, token);
     _http.DefaultRequestHeaders.Authorization =
         new AuthenticationHeaderValue("Bearer", token);
+    _session.LoadFromToken(token);
     AuthStateChanged?.Invoke();
   }
 
@@ -36,6 +39,7 @@ public class AuthService
   {
     await _localStorage.RemoveItemAsync(TokenKey);
     _http.DefaultRequestHeaders.Authorization = null;
+    _session.Clear();
     AuthStateChanged?.Invoke();
   }
 
@@ -43,8 +47,11 @@ public class AuthService
   {
     var token = await GetTokenAsync();
     if (!string.IsNullOrEmpty(token))
+    {
       _http.DefaultRequestHeaders.Authorization =
           new AuthenticationHeaderValue("Bearer", token);
+      _session.LoadFromToken(token);
+    }
   }
 
   public async Task<(bool Success, string? Error)> LoginAsync(LoginModel model)

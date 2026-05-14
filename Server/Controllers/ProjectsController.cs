@@ -48,11 +48,28 @@ public class ProjectsController : ControllerBase
   }
 
   [HttpGet("{id}")]
-  public async Task<ActionResult<Project>> GetProject(int id)
+  public async Task<IActionResult> GetProject(int id)
   {
-    var project = await _context.Projects.FindAsync(id);
+    var project = await _context.Projects
+        .AsNoTracking()
+        .Where(p => p.Id == id)
+        .Select(p => new Project
+        {
+          Id = p.Id,
+          Title = p.Title,
+          Description = p.Description,
+          ImageUrl = p.ImageUrl,
+          PortfolioUserId = p.PortfolioUserId,
+          PortfolioUser = new PortfolioUser
+          {
+            Id = p.PortfolioUserId,
+            Name = p.PortfolioUser != null ? p.PortfolioUser.Name : string.Empty
+          }
+        })
+        .FirstOrDefaultAsync();
+
     if (project == null) return NotFound();
-    return project;
+    return Ok(project);
   }
 
   [Authorize]
@@ -87,7 +104,8 @@ public class ProjectsController : ControllerBase
   [HttpDelete("{id}")]
   public async Task<IActionResult> DeleteProject(int id)
   {
-    var project = await _context.Projects.FindAsync(id);
+    var project = await _context.Projects
+        .FirstOrDefaultAsync(p => p.Id == id);
     if (project == null) return NotFound();
     _context.Projects.Remove(project);
     await _context.SaveChangesAsync();
