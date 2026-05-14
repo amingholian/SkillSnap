@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using SkillSnap.Server.Data;
 using SkillSnap.Shared.Models;
 
@@ -9,17 +10,44 @@ using SkillSnap.Shared.Models;
 public class ProjectsController : ControllerBase
 {
   private readonly SkillSnapContext _context;
+  private readonly IMemoryCache _cache;
 
-  public ProjectsController(SkillSnapContext context)
+  public ProjectsController(SkillSnapContext context, IMemoryCache cache)
   {
     _context = context;
+    _cache = cache;
   }
+
+
+
+  private const string ProjectsCacheKey = "project_list";
 
   [Authorize]
   [HttpGet]
-  public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
+  public async Task<IActionResult> GetProjects()
   {
-    return await _context.Projects.ToListAsync();
+    if (!_cache.TryGetValue(ProjectsCacheKey, out List<Project> projects))
+    {
+      projects = await _context.Projects
+        .AsNoTracking()
+        .Select(p => new Project
+        {
+          Id = p.Id,
+          Title = p.Title,
+          Description = p.Description,
+          PortfolioUser = new PortfolioUser
+          {
+            Id = p.PortfolioUserId,
+            Name = p.PortfolioUser != null ? p.PortfolioUser.Name : null
+          }
+        })
+        .ToListAsync();
+
+      var cacheOptions = new MemoryCacheEntryOptions()
+        .SetSlidingExpiration(TimeSpan.FromMinutes(5));
+      _cache.Set(ProjectsCacheKey, projects, cacheOptions);
+    }
+    return Ok(projects);
   }
 
   [HttpGet("{id}")]
@@ -36,6 +64,7 @@ public class ProjectsController : ControllerBase
   {
     _context.Projects.Add(project);
     await _context.SaveChangesAsync();
+    _cache.Remove(ProjectsCacheKey);
     return CreatedAtAction(nameof(GetProject), new { id = project.Id }, project);
   }
 
@@ -46,6 +75,7 @@ public class ProjectsController : ControllerBase
     if (id != project.Id) return BadRequest();
     _context.Entry(project).State = EntityState.Modified;
     await _context.SaveChangesAsync();
+    _cache.Remove(ProjectsCacheKey);
     return NoContent();
   }
 
@@ -57,6 +87,7 @@ public class ProjectsController : ControllerBase
     if (project == null) return NotFound();
     _context.Projects.Remove(project);
     await _context.SaveChangesAsync();
+    _cache.Remove(ProjectsCacheKey);
     return NoContent();
   }
 }

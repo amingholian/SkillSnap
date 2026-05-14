@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddDbContext<SkillSnapContext>(options =>
   options.UseSqlite("Data Source=skillsnap.db"));
@@ -23,6 +24,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
   .AddEntityFrameworkStores<SkillSnapContext>();
+
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
