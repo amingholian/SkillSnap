@@ -1,33 +1,18 @@
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using SkillSnap.Server.Data;
-using SkillSnap.Shared.Models;
-using Microsoft.AspNetCore.Identity;
+using SkillSnap.Server.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-builder.Services.AddMemoryCache();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<SkillSnapContext>(options =>
-  options.UseSqlite("Data Source=skillsnap.db"));
-
-builder.Services.AddCors(options =>
-{
-  options.AddPolicy("BlazorClient", policy =>
-    policy.WithOrigins("https://localhost:7232", "http://localhost:5232")
-      .AllowAnyHeader()
-      .AllowAnyMethod());
-});
-
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-  .AddEntityFrameworkStores<SkillSnapContext>();
-
-builder.Services.AddMemoryCache();
+builder.Services.AddSkillSnapData(builder.Configuration);
+builder.Services.AddSkillSnapAuth();
+builder.Services.AddSkillSnapCors(builder.Configuration);
 
 var app = builder.Build();
 
