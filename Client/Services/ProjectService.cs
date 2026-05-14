@@ -10,14 +10,21 @@ public class ProjectService
     _http = http;
   }
 
+  /// <summary>Fetches all projects from the API.</summary>
   public async Task<List<Project>> GetProjectsAsync()
   {
     return await _http.GetFromJsonAsync<List<Project>>("api/Projects") ?? new List<Project>();
   }
 
-  public async Task AddProjectAsync(Project newProject)
+  /// <summary>Posts a new project. Returns success flag and error message on failure.</summary>
+  public async Task<(bool Success, string? Error)> AddProjectAsync(Project newProject)
   {
     var response = await _http.PostAsJsonAsync("api/Projects", newProject);
-    response.EnsureSuccessStatusCode();
+    if (!response.IsSuccessStatusCode)
+    {
+      var body = await response.Content.ReadAsStringAsync();
+      return (false, string.IsNullOrWhiteSpace(body) ? $"Error {(int)response.StatusCode}" : body);
+    }
+    return (true, null);
   }
 }

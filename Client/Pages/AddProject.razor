@@ -2,11 +2,16 @@
 @inject ProjectService ProjectService
 @inject PortfolioUserService PortfolioUserService
 @inject NavigationManager Navigation
+@inject UserSessionService Session
 @using SkillSnap.Shared.Models
 
 <h3>Add a New Project</h3>
 
-@if (users == null)
+@if (!Session.IsAuthenticated)
+{
+  <UnauthorizedMessage />
+}
+else if (users == null)
 {
   <p>Loading users...</p>
 }
@@ -71,7 +76,8 @@ else
     errorMessage = null;
     try
     {
-      await ProjectService.AddProjectAsync(newProject);
+      var (success, error) = await ProjectService.AddProjectAsync(newProject);
+      if (!success) { errorMessage = error; isSubmitting = false; return; }
       Navigation.NavigateTo("/projects");
     }
     catch (Exception ex)

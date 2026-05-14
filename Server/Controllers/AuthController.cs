@@ -60,9 +60,14 @@ public class AuthController : ControllerBase
 
   private string GenerateJwt(ApplicationUser user)
   {
-    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+    var keyStr = _config["Jwt:Key"];
+    if (string.IsNullOrEmpty(keyStr))
+      throw new InvalidOperationException("JWT key is not configured.");
+
+    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyStr));
     var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-    var expiry = DateTime.UtcNow.AddMinutes(double.Parse(_config["Jwt:ExpiryMinutes"]!));
+    var expiryMinutes = double.TryParse(_config["Jwt:ExpiryMinutes"], out var m) ? m : 60;
+    var expiry = DateTime.UtcNow.AddMinutes(expiryMinutes);
 
     var claims = new[]
     {

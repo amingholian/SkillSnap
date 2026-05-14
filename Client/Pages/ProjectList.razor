@@ -2,7 +2,12 @@
 @inject ProjectService ProjectService
 @using SkillSnap.Shared.Models
 
-<h1>Projects</h1>
+<PageTitle>Projects — SkillSnap</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mb-0">Projects</h1>
+  <a href="/add-project" class="btn btn-sm btn-primary">+ Add Project</a>
+</div>
 
 @if (errorMessage != null)
 {
@@ -10,7 +15,7 @@
 }
 else if (projects == null)
 {
-  <p>Loading projects...</p>
+  <div class="loading-spinner">Loading projects...</div>
 }
 else if (projects.Count == 0)
 {
@@ -22,10 +27,11 @@ else
     @foreach (var project in projects)
     {
       <li class="list-group-item">
-        <strong>@project.Title</strong>
-        <p>@project.Description</p>
-        <button class="btn btn-sm btn-primary">Edit</button>
-        <button class="btn btn-sm btn-danger">Delete</button>
+        <div class="fw-semibold">@project.Title</div>
+        @if (!string.IsNullOrWhiteSpace(project.Description))
+        {
+          <small class="text-muted">@project.Description</small>
+        }
       </li>
     }
   </ul>

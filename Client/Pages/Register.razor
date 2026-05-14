@@ -3,7 +3,12 @@
 @inject NavigationManager Navigation
 @using SkillSnap.Shared.Models
 
-<h3>Register</h3>
+<PageTitle>Register — SkillSnap</PageTitle>
+
+<div class="row">
+<div class="col-md-6 col-lg-5">
+
+<h3 class="mb-4">Register</h3>
 
 <EditForm Model="model" OnValidSubmit="HandleRegister">
   <DataAnnotationsValidator />
@@ -25,7 +30,7 @@
                placeholder="Confirm password" />
   </div>
 
-  <button type="submit" class="btn btn-success" disabled="@isLoading">
+  <button type="submit" class="btn btn-success w-100" disabled="@isLoading">
     @(isLoading ? "Registering..." : "Register")
   </button>
 </EditForm>
@@ -39,7 +44,10 @@
   <div class="alert alert-success mt-3">@successMessage</div>
 }
 
-<p class="mt-3">Already have an account? <a href="/login">Login</a></p>
+<p class="mt-3 text-muted">Already have an account? <a href="/login">Login</a></p>
+
+</div>
+</div>
 
 @code {
   private RegisterModel model = new();

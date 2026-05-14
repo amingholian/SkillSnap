@@ -2,34 +2,42 @@
 @inject SkillService SkillService
 @inject PortfolioUserService PortfolioUserService
 @inject NavigationManager Navigation
+@inject UserSessionService Session
 @using SkillSnap.Shared.Models
 
 <h3>Add a New Skill</h3>
 
-@if (errorMessage != null)
+@if (!Session.IsAuthenticated)
 {
-  <div class="alert alert-danger">@errorMessage</div>
+  <UnauthorizedMessage />
 }
+else
+{
+  @if (errorMessage != null)
+  {
+    <div class="alert alert-danger">@errorMessage</div>
+  }
 
-<div class="mb-3">
-  <label class="form-label">Portfolio User</label>
-  <select class="form-select" @bind="selectedUserId">
-    <option value="0">-- Select a user --</option>
-    @foreach (var u in users)
-    {
-      <option value="@u.Id">@u.Name</option>
-    }
-  </select>
-</div>
-<div class="mb-3">
-  <label class="form-label">Skill Name</label>
-  <input class="form-control" @bind="newSkillName" placeholder="e.g. Blazor" />
-</div>
-<div class="mb-3">
-  <label class="form-label">Level</label>
-  <input class="form-control" @bind="newSkillLevel" placeholder="e.g. Advanced" />
-</div>
-<button class="btn btn-success" @onclick="HandleAddSkill">Save Skill</button>
+  <div class="mb-3">
+    <label class="form-label">Portfolio User</label>
+    <select class="form-select" @bind="selectedUserId">
+      <option value="0">-- Select a user --</option>
+      @foreach (var u in users)
+      {
+        <option value="@u.Id">@u.Name</option>
+      }
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Skill Name</label>
+    <input class="form-control" @bind="newSkillName" placeholder="e.g. Blazor" />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Level</label>
+    <input class="form-control" @bind="newSkillLevel" placeholder="e.g. Advanced" />
+  </div>
+  <button class="btn btn-success" @onclick="HandleAddSkill">Save Skill</button>
+}
 
 @code {
   private List<PortfolioUser> users = new();

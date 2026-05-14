@@ -20,6 +20,44 @@ a, .btn-link {
 
 .content {
     padding-top: 1.1rem;
+    max-width: 900px;
+}
+
+/* Smooth card hover lift */
+.card {
+    transition: box-shadow 0.2s ease;
+}
+.card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,.1) !important;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+    padding: 1rem 0;
+}
+.loading-spinner::before {
+    content: "";
+    display: inline-block;
+    width: 1.2rem;
+    height: 1.2rem;
+    border: 2px solid #dee2e6;
+    border-top-color: #1b6ec2;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Tighten list-group on small screens */
+@media (max-width: 576px) {
+    .list-group-item {
+        padding: 0.5rem 0.75rem;
+    }
 }
 
 .valid.modified:not([type=checkbox]) {

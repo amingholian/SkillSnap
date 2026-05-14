@@ -1,0 +1,16 @@
+@inject NavigationManager Navigation
+
+<div class="alert alert-warning d-flex align-items-center gap-3 mt-3" role="alert">
+  <span class="oi oi-lock-locked fs-4" aria-hidden="true"></span>
+  <div>
+    <strong>Access Restricted</strong>
+    <p class="mb-1">You must be logged in to access this page.</p>
+    <button class="btn btn-sm btn-primary" @onclick="GoToLogin">Login</button>
+    <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="GoToRegister">Register</button>
+  </div>
+</div>
+
+@code {
+  private void GoToLogin() => Navigation.NavigateTo("/login");
+  private void GoToRegister() => Navigation.NavigateTo("/register");
+}

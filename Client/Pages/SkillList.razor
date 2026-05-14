@@ -2,7 +2,12 @@
 @inject SkillService SkillService
 @using SkillSnap.Shared.Models
 
-<h1>Skills</h1>
+<PageTitle>Skills — SkillSnap</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mb-0">Skills</h1>
+  <a href="/add-skill" class="btn btn-sm btn-primary">+ Add Skill</a>
+</div>
 
 @if (errorMessage != null)
 {
@@ -10,7 +15,7 @@
 }
 else if (skills == null)
 {
-  <p>Loading skills...</p>
+  <div class="loading-spinner">Loading skills...</div>
 }
 else if (skills.Count == 0)
 {

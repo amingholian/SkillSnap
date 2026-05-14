@@ -1,11 +1,10 @@
 @page "/profile"
 @inject PortfolioUserService PortfolioUserService
 @using SkillSnap.Shared.Models
-@using SkillSnap.Client.Shared
 
 @if (user == null)
 {
-  <p>Loading profile...</p>
+  <div class="loading-spinner">Loading profile...</div>
 }
 else
 {
