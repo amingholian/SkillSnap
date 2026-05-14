@@ -1,39 +1,104 @@
 ﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">SkillSnap</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
+  @implements IDisposable
+  <div class="container-fluid">
+    <a class="navbar-brand" href="">SkillSnap</a>
+    <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </div>
 </div>
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </div>
-    </nav>
+  <nav class="flex-column">
+    <div class="nav-item px-3">
+      <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+        <span class="oi oi-home" aria-hidden="true"></span> Home
+      </NavLink>
+    </div>
+    <div class="nav-item px-3">
+      <NavLink class="nav-link" href="profile">
+        <span class="oi oi-person" aria-hidden="true"></span> Profile
+      </NavLink>
+    </div>
+    <div class="nav-item px-3">
+      <NavLink class="nav-link" href="projects">
+        <span class="oi oi-list-rich" aria-hidden="true"></span> Projects
+      </NavLink>
+    </div>
+    <div class="nav-item px-3">
+      <NavLink class="nav-link" href="add-project">
+        <span class="oi oi-plus" aria-hidden="true"></span> Add Project
+      </NavLink>
+    </div>
+    <div class="nav-item px-3">
+      <NavLink class="nav-link" href="skills">
+        <span class="oi oi-task" aria-hidden="true"></span> Skills
+      </NavLink>
+    </div>
+    <div class="nav-item px-3">
+      <NavLink class="nav-link" href="add-skill">
+        <span class="oi oi-plus" aria-hidden="true"></span> Add Skill
+      </NavLink>
+    </div>
+    <hr />
+    @if (isAuthenticated)
+    {
+      <div class="nav-item px-3">
+        <button class="btn btn-link nav-link" @onclick="Logout">
+          <span class="oi oi-account-logout" aria-hidden="true"></span> Logout
+        </button>
+      </div>
+    }
+    else
+    {
+      <div class="nav-item px-3">
+        <NavLink class="nav-link" href="login">
+          <span class="oi oi-account-login" aria-hidden="true"></span> Login
+        </NavLink>
+      </div>
+      <div class="nav-item px-3">
+        <NavLink class="nav-link" href="register">
+          <span class="oi oi-person" aria-hidden="true"></span> Register
+        </NavLink>
+      </div>
+    }
+  </nav>
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
+  @inject AuthService AuthService
+  @inject NavigationManager Navigation
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+  private bool collapseNavMenu = true;
+  private bool isAuthenticated;
 
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
+  private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+  private void ToggleNavMenu()
+  {
+    collapseNavMenu = !collapseNavMenu;
+  }
+
+  protected override async Task OnInitializedAsync()
+  {
+    isAuthenticated = await AuthService.IsAuthenticatedAsync();
+    AuthService.AuthStateChanged += OnAuthStateChanged;
+  }
+
+  private async void OnAuthStateChanged()
+  {
+    isAuthenticated = await AuthService.IsAuthenticatedAsync();
+    await InvokeAsync(StateHasChanged);
+  }
+
+  public void Dispose()
+  {
+    AuthService.AuthStateChanged -= OnAuthStateChanged;
+  }
+
+  private async Task Logout()
+  {
+    await AuthService.LogoutAsync();
+    Navigation.NavigateTo("/login");
+  }
 }

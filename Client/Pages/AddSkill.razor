@@ -1,13 +1,63 @@
 @page "/add-skill"
+@inject SkillService SkillService
+@inject PortfolioUserService PortfolioUserService
+@inject NavigationManager Navigation
+@using SkillSnap.Shared.Models
 
 <h3>Add a New Skill</h3>
 
-<input @bind="newSkillName" placeholder="Skill name" />
-<input @bind="newSkillLevel" placeholder="Skill level" />
+@if (errorMessage != null)
+{
+  <div class="alert alert-danger">@errorMessage</div>
+}
 
-<p>You're adding: @newSkillName at @newSkillLevel level</p>
+<div class="mb-3">
+  <label class="form-label">Portfolio User</label>
+  <select class="form-select" @bind="selectedUserId">
+    <option value="0">-- Select a user --</option>
+    @foreach (var u in users)
+    {
+      <option value="@u.Id">@u.Name</option>
+    }
+  </select>
+</div>
+<div class="mb-3">
+  <label class="form-label">Skill Name</label>
+  <input class="form-control" @bind="newSkillName" placeholder="e.g. Blazor" />
+</div>
+<div class="mb-3">
+  <label class="form-label">Level</label>
+  <input class="form-control" @bind="newSkillLevel" placeholder="e.g. Advanced" />
+</div>
+<button class="btn btn-success" @onclick="HandleAddSkill">Save Skill</button>
 
 @code {
-  private string newSkillName;
-  private string newSkillLevel;
+  private List<PortfolioUser> users = new();
+  private int selectedUserId;
+  private string newSkillName = string.Empty;
+  private string newSkillLevel = string.Empty;
+  private string? errorMessage;
+
+  protected override async Task OnInitializedAsync()
+  {
+    users = await PortfolioUserService.GetUsersAsync();
+  }
+
+  private async Task HandleAddSkill()
+  {
+    errorMessage = null;
+    if (selectedUserId <= 0) { errorMessage = "Please select a portfolio user."; return; }
+    if (string.IsNullOrWhiteSpace(newSkillName)) { errorMessage = "Skill name is required."; return; }
+
+    var skill = new Skill
+    {
+      Name = newSkillName,
+      Level = newSkillLevel,
+      PortfolioUserId = selectedUserId
+    };
+
+    var (success, error) = await SkillService.AddSkillAsync(skill);
+    if (!success) { errorMessage = error; return; }
+    Navigation.NavigateTo("/skills");
+  }
 }

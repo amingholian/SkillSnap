@@ -1,14 +1,65 @@
 @page "/profile"
+@inject PortfolioUserService PortfolioUserService
 @using SkillSnap.Shared.Models
 @using SkillSnap.Client.Shared
 
-<ProfileCard Name="@user.Name" Bio="@user.Bio" ImageUrl="@user.ProfileImageUrl" />
+@if (user == null)
+{
+  <p>Loading profile...</p>
+}
+else
+{
+  <ProfileCard Name="@user.Name" Bio="@user.Bio" ImageUrl="@user.ProfileImageUrl" />
+
+  <h4 class="mt-4">Skills</h4>
+  @if (user.Skills.Count == 0)
+  {
+    <p class="text-muted">No skills yet.</p>
+  }
+  else
+  {
+    <div class="mb-3">
+      @foreach (var skill in user.Skills)
+      {
+        <span class="badge bg-primary me-1 mb-1">
+          @skill.Name
+          @if (!string.IsNullOrWhiteSpace(skill.Level))
+          {
+            <small class="text-white-50 ms-1">@skill.Level</small>
+          }
+        </span>
+      }
+    </div>
+  }
+
+  <h4 class="mt-4">Projects</h4>
+  @if (user.Projects.Count == 0)
+  {
+    <p class="text-muted">No projects yet.</p>
+  }
+  else
+  {
+    <ul class="list-group">
+      @foreach (var project in user.Projects)
+      {
+        <li class="list-group-item">
+          <strong>@project.Title</strong>
+          @if (!string.IsNullOrWhiteSpace(project.Description))
+          {
+            <p class="mb-0 text-muted">@project.Description</p>
+          }
+        </li>
+      }
+    </ul>
+  }
+}
 
 @code {
-  private PortfolioUser user = new()
+  private PortfolioUser? user;
+
+  protected override async Task OnInitializedAsync()
   {
-    Name = "Jordan Developer",
-    Bio = "Full-stack developer passionate about learning new tech.",
-    ProfileImageUrl = "https://example.com/images/jordan.png"
-  };
+    var users = await PortfolioUserService.GetUsersAsync();
+    user = users.FirstOrDefault();
+  }
 }

@@ -1,10 +1,14 @@
+@page "/projects"
 @inject ProjectService ProjectService
-
 @using SkillSnap.Shared.Models
 
 <h1>Projects</h1>
 
-@if (projects == null)
+@if (errorMessage != null)
+{
+  <div class="alert alert-danger">@errorMessage</div>
+}
+else if (projects == null)
 {
   <p>Loading projects...</p>
 }
@@ -28,10 +32,18 @@ else
 }
 
 @code {
-  private List<Project> projects;
+  private List<Project>? projects;
+  private string? errorMessage;
 
   protected override async Task OnInitializedAsync()
   {
-    projects = await ProjectService.GetProjectsAsync();
+    try
+    {
+      projects = await ProjectService.GetProjectsAsync();
+    }
+    catch (Exception ex)
+    {
+      errorMessage = $"Failed to load projects: {ex.Message}";
+    }
   }
 }

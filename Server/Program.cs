@@ -11,7 +11,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSkillSnapData(builder.Configuration);
-builder.Services.AddSkillSnapAuth();
+builder.Services.AddSkillSnapAuth(builder.Configuration);
 builder.Services.AddSkillSnapCors(builder.Configuration);
 
 var app = builder.Build();
@@ -38,6 +38,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseCors("BlazorClient");
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();

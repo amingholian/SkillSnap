@@ -12,11 +12,12 @@ public class ProjectService
 
   public async Task<List<Project>> GetProjectsAsync()
   {
-    return await _http.GetFromJsonAsync<List<Project>>("api/Projects");
+    return await _http.GetFromJsonAsync<List<Project>>("api/Projects") ?? new List<Project>();
   }
 
   public async Task AddProjectAsync(Project newProject)
   {
-    await _http.PostAsJsonAsync("api/Projects", newProject);
+    var response = await _http.PostAsJsonAsync("api/Projects", newProject);
+    response.EnsureSuccessStatusCode();
   }
 }

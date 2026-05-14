@@ -1,5 +1,9 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using SkillSnap.Server.Data;
 using SkillSnap.Shared.Models;
 
@@ -9,11 +13,13 @@ public class AuthController : ControllerBase
 {
   private readonly UserManager<ApplicationUser> _userManager;
   private readonly SignInManager<ApplicationUser> _signInManager;
+  private readonly IConfiguration _config;
 
-  public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+  public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration config)
   {
     _userManager = userManager;
     _signInManager = signInManager;
+    _config = config;
   }
 
   [HttpPost("register")]
@@ -22,11 +28,14 @@ public class AuthController : ControllerBase
     if (!ModelState.IsValid)
       return BadRequest(ModelState);
 
+    if (request.Password != request.ConfirmPassword)
+      return BadRequest(new { message = "Passwords do not match." });
+
     var user = new ApplicationUser { UserName = request.Email, Email = request.Email };
     var result = await _userManager.CreateAsync(user, request.Password);
 
     if (result.Succeeded)
-      return Ok(new { message = "User registered successfully" });
+      return Ok(new { message = "User registered successfully." });
 
     return BadRequest(result.Errors);
   }
@@ -37,11 +46,39 @@ public class AuthController : ControllerBase
     if (!ModelState.IsValid)
       return BadRequest(ModelState);
 
-    var result = await _signInManager.PasswordSignInAsync(request.Email, request.Password, false, false);
+    var user = await _userManager.FindByEmailAsync(request.Email);
+    if (user == null)
+      return Unauthorized(new { message = "Invalid email or password." });
 
-    if (result.Succeeded)
-      return Ok(new { message = "User logged in successfully" });
+    var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+    if (!result.Succeeded)
+      return Unauthorized(new { message = "Invalid email or password." });
 
-    return BadRequest(new { message = "Invalid email or password" });
+    var token = GenerateJwt(user);
+    return Ok(new { token });
+  }
+
+  private string GenerateJwt(ApplicationUser user)
+  {
+    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+    var expiry = DateTime.UtcNow.AddMinutes(double.Parse(_config["Jwt:ExpiryMinutes"]!));
+
+    var claims = new[]
+    {
+      new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+      new Claim(JwtRegisteredClaimNames.Email, user.Email!),
+      new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
+
+    var token = new JwtSecurityToken(
+      issuer: _config["Jwt:Issuer"],
+      audience: _config["Jwt:Audience"],
+      claims: claims,
+      expires: expiry,
+      signingCredentials: creds
+    );
+
+    return new JwtSecurityTokenHandler().WriteToken(token);
   }
 }

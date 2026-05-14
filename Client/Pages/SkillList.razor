@@ -1,0 +1,50 @@
+@page "/skills"
+@inject SkillService SkillService
+@using SkillSnap.Shared.Models
+
+<h1>Skills</h1>
+
+@if (errorMessage != null)
+{
+  <div class="alert alert-danger">@errorMessage</div>
+}
+else if (skills == null)
+{
+  <p>Loading skills...</p>
+}
+else if (skills.Count == 0)
+{
+  <p>No skills found.</p>
+}
+else
+{
+  <ul class="list-group">
+    @foreach (var skill in skills)
+    {
+      <li class="list-group-item">
+        <strong>@skill.Name</strong>
+        @if (!string.IsNullOrWhiteSpace(skill.Level))
+        {
+          <span class="badge bg-secondary ms-2">@skill.Level</span>
+        }
+      </li>
+    }
+  </ul>
+}
+
+@code {
+  private List<Skill>? skills;
+  private string? errorMessage;
+
+  protected override async Task OnInitializedAsync()
+  {
+    try
+    {
+      skills = await SkillService.GetSkillsAsync();
+    }
+    catch (Exception ex)
+    {
+      errorMessage = $"Failed to load skills: {ex.Message}";
+    }
+  }
+}

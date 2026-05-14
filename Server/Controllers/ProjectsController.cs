@@ -18,15 +18,12 @@ public class ProjectsController : ControllerBase
     _cache = cache;
   }
 
-
-
   private const string ProjectsCacheKey = "project_list";
 
-  [Authorize]
   [HttpGet]
   public async Task<IActionResult> GetProjects()
   {
-    if (!_cache.TryGetValue(ProjectsCacheKey, out List<Project> projects))
+    if (!_cache.TryGetValue(ProjectsCacheKey, out List<Project>? projects))
     {
       projects = await _context.Projects
         .AsNoTracking()
@@ -38,7 +35,7 @@ public class ProjectsController : ControllerBase
           PortfolioUser = new PortfolioUser
           {
             Id = p.PortfolioUserId,
-            Name = p.PortfolioUser != null ? p.PortfolioUser.Name : null
+            Name = p.PortfolioUser != null ? p.PortfolioUser.Name : string.Empty
           }
         })
         .ToListAsync();
@@ -58,10 +55,17 @@ public class ProjectsController : ControllerBase
     return project;
   }
 
-  [Authorize(Roles = "Admin")]
+  [Authorize]
   [HttpPost]
   public async Task<ActionResult<Project>> AddProject([FromBody] Project project)
   {
+    if (project.PortfolioUserId <= 0)
+      return BadRequest("A valid PortfolioUserId is required.");
+
+    var userExists = await _context.PortfolioUsers.AnyAsync(u => u.Id == project.PortfolioUserId);
+    if (!userExists)
+      return BadRequest($"PortfolioUser with Id {project.PortfolioUserId} does not exist.");
+
     _context.Projects.Add(project);
     await _context.SaveChangesAsync();
     _cache.Remove(ProjectsCacheKey);
